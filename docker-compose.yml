@@ -1,7 +1,7 @@
 services:
   sharelatex:
     restart: always
-    image: "${TEXDOCK_FULL_IMAGE:-texdock/sharelatex-full-fonts:latest}"
+    image: "${TEXDOCK_FULL_IMAGE:-texdock/sharelatex-full:latest}"
     container_name: sharelatex
     depends_on:
       mongo:

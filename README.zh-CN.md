@@ -39,8 +39,8 @@ TeXDock 提供两种部署模式：
 Full 镜像将 Overleaf CE、TeX Live、CJK 字体和辅助脚本打包在一个容器中：
 
 ```text
-texdock/sharelatex-full-fonts:<version>
-texdock/sharelatex-full-fonts:latest
+texdock/sharelatex-full:<version>
+texdock/sharelatex-full:latest
 ```
 
 包含内容：
@@ -133,12 +133,16 @@ docker build -f server-ce/Dockerfile-full \
   -t "$IMAGE_NAMESPACE/sharelatex-full:$VERSION" \
   -t "$IMAGE_NAMESPACE/sharelatex-full:latest" .
 
-# 步骤 4：Windows 字体叠加层（可选，需要 fonts.zip）
+# 步骤 4：Windows 字体叠加层（需要 fonts.zip）
 docker build -f server-ce/Dockerfile-windows-fonts \
   --build-arg TEXDOCK_VERSION="$VERSION" \
   --build-arg BASE_IMAGE="$IMAGE_NAMESPACE/sharelatex-full:$VERSION" \
-  -t "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" \
-  -t "$IMAGE_NAMESPACE/sharelatex-full-fonts:latest" .
+  -t "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" .
+
+# 步骤 5：将 fonts 镜像改名为 sharelatex-full（最终镜像）
+docker tag "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" "$IMAGE_NAMESPACE/sharelatex-full:$VERSION"
+docker tag "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" "$IMAGE_NAMESPACE/sharelatex-full:latest"
+docker rmi "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION"
 ```
 
 ### 构建 Sandbox 镜像

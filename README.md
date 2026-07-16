@@ -39,8 +39,8 @@ Do not mix the two modes in one Compose stack.
 The full image contains Overleaf CE, TeX Live, CJK fonts, and helper scripts in one container:
 
 ```text
-texdock/sharelatex-full-fonts:<version>
-texdock/sharelatex-full-fonts:latest
+texdock/sharelatex-full:<version>
+texdock/sharelatex-full:latest
 ```
 
 This image includes:
@@ -133,12 +133,16 @@ docker build -f server-ce/Dockerfile-full \
   -t "$IMAGE_NAMESPACE/sharelatex-full:$VERSION" \
   -t "$IMAGE_NAMESPACE/sharelatex-full:latest" .
 
-# Step 4: Windows fonts overlay (optional, requires fonts.zip)
+# Step 4: Windows fonts overlay (requires fonts.zip in scripts/fonts/private/)
 docker build -f server-ce/Dockerfile-windows-fonts \
   --build-arg TEXDOCK_VERSION="$VERSION" \
   --build-arg BASE_IMAGE="$IMAGE_NAMESPACE/sharelatex-full:$VERSION" \
-  -t "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" \
-  -t "$IMAGE_NAMESPACE/sharelatex-full-fonts:latest" .
+  -t "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" .
+
+# Step 5: Rename fonts image to sharelatex-full (final image)
+docker tag "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" "$IMAGE_NAMESPACE/sharelatex-full:$VERSION"
+docker tag "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION" "$IMAGE_NAMESPACE/sharelatex-full:latest"
+docker rmi "$IMAGE_NAMESPACE/sharelatex-full-fonts:$VERSION"
 ```
 
 ### Build the sandbox images
