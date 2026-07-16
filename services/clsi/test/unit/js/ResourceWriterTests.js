@@ -372,6 +372,77 @@ describe('ResourceWriter', function () {
     })
   })
 
+  describe('isExtraneousFile - minted directory regex', function () {
+    beforeEach(function () {
+      this.ResourceWriter = SandboxedModule.require(modulePath, {
+        singleOnly: true,
+        requires: {
+          fs: (this.fs = {
+            mkdir: sinon.stub().callsArg(1),
+            unlink: sinon.stub().callsArg(1),
+          }),
+          './ResourceStateManager': (this.ResourceStateManager = {}),
+          './UrlCache': (this.UrlCache = {
+            createProjectDir: sinon.stub().yields(),
+          }),
+          './OutputFileFinder': (this.OutputFileFinder = {}),
+          './Metrics': (this.Metrics = {
+            inc: sinon.stub(),
+            Timer: sinon.stub().returns({ done: sinon.stub() }),
+          }),
+        },
+      })
+    })
+
+    it('should NOT delete files in _minted/ (plain, no suffix)', function () {
+      expect(this.ResourceWriter.isExtraneousFile('_minted/foo.pygtex')).to.equal(false)
+    })
+
+    it('should NOT delete files in _minted-main/ (with jobname suffix)', function () {
+      expect(this.ResourceWriter.isExtraneousFile('_minted-main/foo.pygtex')).to.equal(false)
+    })
+
+    it('should NOT delete files in foo/_minted/ (nested, no suffix)', function () {
+      expect(this.ResourceWriter.isExtraneousFile('foo/_minted/bar.pygtex')).to.equal(false)
+    })
+
+    it('should NOT delete files in foo/_minted-project/ (nested, with suffix)', function () {
+      expect(this.ResourceWriter.isExtraneousFile('foo/_minted-project/bar.pygtex')).to.equal(false)
+    })
+
+    it('should NOT delete plain .pygtex files', function () {
+      expect(this.ResourceWriter.isExtraneousFile('some-dir/cache.pygtex')).to.equal(false)
+    })
+
+    it('should NOT delete plain .pygstyle files', function () {
+      expect(this.ResourceWriter.isExtraneousFile('some-dir/style.pygstyle')).to.equal(false)
+    })
+
+    it('should NOT delete non-pygtex files in plain _minted/ directory', function () {
+      expect(this.ResourceWriter.isExtraneousFile('_minted/some-cache-file')).to.equal(false)
+    })
+
+    it('should NOT delete non-pygtex files in nested _minted/ directory', function () {
+      expect(this.ResourceWriter.isExtraneousFile('subdir/_minted/some-cache-file')).to.equal(false)
+    })
+
+    it('should NOT delete _mintedfoo/ files with .pygtex extension (extension check preserves)', function () {
+      expect(this.ResourceWriter.isExtraneousFile('_mintedfoo/bar.pygtex')).to.equal(false)
+    })
+
+    it('should NOT delete foo_minted/ files with .pygtex extension (extension check preserves)', function () {
+      expect(this.ResourceWriter.isExtraneousFile('foo_minted/bar.pygtex')).to.equal(false)
+    })
+
+    it('should delete non-minted files without special extensions', function () {
+      expect(this.ResourceWriter.isExtraneousFile('_mintedfoo/bar.log')).to.equal(true)
+    })
+
+    it('should delete plain _minted (not a directory path)', function () {
+      expect(this.ResourceWriter.isExtraneousFile('_minted')).to.equal(true)
+    })
+  })
+
   describe('_writeResourceToDisk', function () {
     describe('with a url based resource', function () {
       beforeEach(function () {
