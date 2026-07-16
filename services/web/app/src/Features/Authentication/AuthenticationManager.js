@@ -2,6 +2,7 @@ const Settings = require('@overleaf/settings')
 const { User } = require('../../models/User')
 const { db, ObjectId } = require('../../infrastructure/mongodb')
 const bcrypt = require('bcrypt')
+const { sanitizeControlCharacters } = require('../../infrastructure/Sanitize')
 const EmailHelper = require('../Helpers/EmailHelper')
 const {
   InvalidEmailError,
@@ -115,6 +116,9 @@ const AuthenticationManager = {
   },
 
   async authenticate(query, password, auditLog, { enforceHIBPCheck = true }) {
+    if (typeof password === 'string') {
+      password = sanitizeControlCharacters(password)
+    }
     const { user, match } = await AuthenticationManager._checkUserPassword(
       query,
       password
@@ -313,6 +317,7 @@ const AuthenticationManager = {
     if (!user || !user.email || !user._id) {
       throw new Error('invalid user object')
     }
+    password = sanitizeControlCharacters(password)
     const validationError = this.validatePassword(password, user.email)
     if (validationError) {
       throw validationError

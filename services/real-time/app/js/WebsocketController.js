@@ -572,6 +572,14 @@ module.exports = WebsocketController = {
           )
           return callback(error)
         }
+        if (update.doc && update.doc !== docId) {
+          return callback(
+            new CodedError(
+              'update.doc must be identical to docId parameter in applyOtUpdate(docId, update)'
+            )
+          )
+        }
+        update.doc = docId
         if (!update.meta) {
           update.meta = {}
         }

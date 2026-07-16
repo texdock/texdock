@@ -59,6 +59,15 @@ services:
       # OVERLEAF_LDAP_LAST_NAME_ATT: 'sn'
       # OVERLEAF_LDAP_UPDATE_USER_DETAILS_ON_LOGIN: 'true'
 
+      # ---------------------------------------------------------------------
+      # Sandbox compile settings
+      # ---------------------------------------------------------------------
+
+      SANDBOXED_COMPILES: 'false'
+      DOCKER_RUNNER: 'false'
+      SANDBOXED_COMPILES_SIBLING_CONTAINERS: 'false'
+      SANDBOXED_COMPILES_DISABLE_SECCOMP: 'false'
+
   mongo:
     restart: always
     image: "${TEXDOCK_MONGO_IMAGE:-mongo:8.0}"

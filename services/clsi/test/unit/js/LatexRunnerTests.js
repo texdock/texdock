@@ -215,5 +215,160 @@ describe('LatexRunner', function () {
         ])
       })
     })
+
+    describe('latex run count detection (TeXLive 2022+ stdout)', function () {
+      it('should detect run count from stdout when only stdout has run info', function (done) {
+        this.commandRunnerOutput = {
+          stdout:
+            'Run number 1 of pdflatex\nRun number 2 of pdflatex\nLatexmk: Errors',
+          stderr: '',
+        }
+        this.CommandRunner = {
+          run: sinon.stub().yields(null, this.commandRunnerOutput),
+        }
+        this.LatexRunner = SandboxedModule.require(MODULE_PATH, {
+          requires: {
+            '@overleaf/settings': this.Settings,
+            './CommandRunner': this.CommandRunner,
+            fs: this.fs,
+          },
+        })
+        this.LatexRunner.runLatex(
+          this.project_id,
+          {
+            directory: this.directory,
+            mainFile: this.mainFile,
+            compiler: this.compiler,
+            timeout: this.timeout,
+            image: this.image,
+            environment: this.env,
+            compileGroup: this.compileGroup,
+            flags: this.flags,
+            stopOnFirstError: this.stopOnFirstError,
+            timings: this.timings,
+            stats: this.stats,
+          },
+          (err, output) => {
+            expect(err).to.not.exist
+            expect(this.stats['latex-runs']).to.equal(2)
+            done()
+          }
+        )
+      })
+
+      it('should detect run count from stderr (legacy TeXLive 2021)', function (done) {
+        this.commandRunnerOutput = {
+          stdout: '',
+          stderr: 'Run number 1 of pdflatex\nRun number 2 of pdflatex',
+        }
+        this.CommandRunner = {
+          run: sinon.stub().yields(null, this.commandRunnerOutput),
+        }
+        this.LatexRunner = SandboxedModule.require(MODULE_PATH, {
+          requires: {
+            '@overleaf/settings': this.Settings,
+            './CommandRunner': this.CommandRunner,
+            fs: this.fs,
+          },
+        })
+        this.LatexRunner.runLatex(
+          this.project_id,
+          {
+            directory: this.directory,
+            mainFile: this.mainFile,
+            compiler: this.compiler,
+            timeout: this.timeout,
+            image: this.image,
+            environment: this.env,
+            compileGroup: this.compileGroup,
+            flags: this.flags,
+            stopOnFirstError: this.stopOnFirstError,
+            timings: this.timings,
+            stats: this.stats,
+          },
+          (err, output) => {
+            expect(err).to.not.exist
+            expect(this.stats['latex-runs']).to.equal(2)
+            done()
+          }
+        )
+      })
+
+      it('should prefer stdout over stderr when both have run info', function (done) {
+        this.commandRunnerOutput = {
+          stdout: 'Run number 1 of pdflatex\nRun number 2 of pdflatex\nRun number 3 of pdflatex',
+          stderr: 'Run number 1 of pdflatex',
+        }
+        this.CommandRunner = {
+          run: sinon.stub().yields(null, this.commandRunnerOutput),
+        }
+        this.LatexRunner = SandboxedModule.require(MODULE_PATH, {
+          requires: {
+            '@overleaf/settings': this.Settings,
+            './CommandRunner': this.CommandRunner,
+            fs: this.fs,
+          },
+        })
+        this.LatexRunner.runLatex(
+          this.project_id,
+          {
+            directory: this.directory,
+            mainFile: this.mainFile,
+            compiler: this.compiler,
+            timeout: this.timeout,
+            image: this.image,
+            environment: this.env,
+            compileGroup: this.compileGroup,
+            flags: this.flags,
+            stopOnFirstError: this.stopOnFirstError,
+            timings: this.timings,
+            stats: this.stats,
+          },
+          (err, output) => {
+            expect(err).to.not.exist
+            expect(this.stats['latex-runs']).to.equal(3)
+            done()
+          }
+        )
+      })
+
+      it('should return 0 when neither stdout nor stderr have run info', function (done) {
+        this.commandRunnerOutput = {
+          stdout: 'no run info here',
+          stderr: 'no run info here',
+        }
+        this.CommandRunner = {
+          run: sinon.stub().yields(null, this.commandRunnerOutput),
+        }
+        this.LatexRunner = SandboxedModule.require(MODULE_PATH, {
+          requires: {
+            '@overleaf/settings': this.Settings,
+            './CommandRunner': this.CommandRunner,
+            fs: this.fs,
+          },
+        })
+        this.LatexRunner.runLatex(
+          this.project_id,
+          {
+            directory: this.directory,
+            mainFile: this.mainFile,
+            compiler: this.compiler,
+            timeout: this.timeout,
+            image: this.image,
+            environment: this.env,
+            compileGroup: this.compileGroup,
+            flags: this.flags,
+            stopOnFirstError: this.stopOnFirstError,
+            timings: this.timings,
+            stats: this.stats,
+          },
+          (err, output) => {
+            expect(err).to.not.exist
+            expect(this.stats['latex-runs']).to.equal(0)
+            done()
+          }
+        )
+      })
+    })
   })
 })
